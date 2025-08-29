@@ -1,1 +1,196 @@
-jutnal
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jurnal Upload & Access</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <header class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <h1 class="text-2xl font-semibold text-gray-900 flex items-center">
+        <i class="fas fa-book-open mr-2 text-indigo-600"></i> Jurnal Repository
+      </h1>
+      <nav class="space-x-4 text-gray-700 text-sm sm:text-base">
+        <a href="#upload" class="hover:text-indigo-600 font-medium">Upload Jurnal</a>
+        <a href="#list" class="hover:text-indigo-600 font-medium">Daftar Jurnal</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <section id="upload" class="mb-12 bg-white rounded-lg shadow p-6 sm:p-10">
+      <h2 class="text-3xl font-semibold text-gray-900 mb-6 flex items-center">
+        <i class="fas fa-upload mr-3 text-indigo-600"></i> Upload File Jurnal
+      </h2>
+      <form id="uploadForm" class="space-y-6" enctype="multipart/form-data" novalidate>
+        <div>
+          <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Judul Jurnal</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            required
+            placeholder="Masukkan judul jurnal"
+            class="block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label for="author" class="block text-sm font-medium text-gray-700 mb-1">Penulis</label>
+          <input
+            type="text"
+            id="author"
+            name="author"
+            required
+            placeholder="Masukkan nama penulis"
+            class="block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label for="file" class="block text-sm font-medium text-gray-700 mb-1">File Jurnal (PDF)</label>
+          <input
+            type="file"
+            id="file"
+            name="file"
+            accept="application/pdf"
+            required
+            class="block w-full text-gray-700"
+          />
+        </div>
+        <button
+          type="submit"
+          class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <i class="fas fa-file-upload mr-2"></i> Upload
+        </button>
+      </form>
+      <p id="uploadMessage" class="mt-4 text-sm font-medium"></p>
+    </section>
+
+    <section id="list" class="bg-white rounded-lg shadow p-6 sm:p-10">
+      <h2 class="text-3xl font-semibold text-gray-900 mb-6 flex items-center">
+        <i class="fas fa-book mr-3 text-indigo-600"></i> Daftar Jurnal
+      </h2>
+      <div id="journalList" class="space-y-4">
+        <p class="text-gray-500">Belum ada jurnal yang diupload.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-white border-t mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-gray-500 text-sm">
+      &copy; 2024 Jurnal Repository. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    // Simple client-side storage for demonstration purposes
+    // Stores journals in localStorage as an array of objects {id, title, author, fileName, fileDataUrl}
+
+    const uploadForm = document.getElementById('uploadForm');
+    const uploadMessage = document.getElementById('uploadMessage');
+    const journalList = document.getElementById('journalList');
+
+    function loadJournals() {
+      const journals = JSON.parse(localStorage.getItem('journals') || '[]');
+      if (journals.length === 0) {
+        journalList.innerHTML = '<p class="text-gray-500">Belum ada jurnal yang diupload.</p>';
+        return;
+      }
+      journalList.innerHTML = '';
+      journals.forEach((journal) => {
+        const journalItem = document.createElement('div');
+        journalItem.className = 'border border-gray-200 rounded-md p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between';
+        journalItem.innerHTML = `
+          <div>
+            <h3 class="text-lg font-semibold text-indigo-700">${escapeHtml(journal.title)}</h3>
+            <p class="text-gray-600">Penulis: ${escapeHtml(journal.author)}</p>
+          </div>
+          <div class="mt-3 sm:mt-0">
+            <a
+              href="${journal.fileDataUrl}"
+              download="${escapeHtml(journal.fileName)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              ><i class="fas fa-file-pdf mr-2"></i> Unduh / Buka</a
+            >
+          </div>
+        `;
+        journalList.appendChild(journalItem);
+      });
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, function (m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        }[m];
+      });
+    }
+
+    uploadForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      uploadMessage.textContent = '';
+      const title = uploadForm.title.value.trim();
+      const author = uploadForm.author.value.trim();
+      const fileInput = uploadForm.file;
+      if (!title || !author || fileInput.files.length === 0) {
+        uploadMessage.textContent = 'Semua field harus diisi dan file harus dipilih.';
+        uploadMessage.className = 'mt-4 text-sm font-medium text-red-600';
+        return;
+      }
+      const file = fileInput.files[0];
+      if (file.type !== 'application/pdf') {
+        uploadMessage.textContent = 'File harus berformat PDF.';
+        uploadMessage.className = 'mt-4 text-sm font-medium text-red-600';
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        uploadMessage.textContent = 'Ukuran file maksimal 10MB.';
+        uploadMessage.className = 'mt-4 text-sm font-medium text-red-600';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const fileDataUrl = event.target.result;
+        const journals = JSON.parse(localStorage.getItem('journals') || '[]');
+        const newJournal = {
+          id: Date.now(),
+          title,
+          author,
+          fileName: file.name,
+          fileDataUrl,
+        };
+        journals.push(newJournal);
+        localStorage.setItem('journals', JSON.stringify(journals));
+        uploadMessage.textContent = 'Jurnal berhasil diupload!';
+        uploadMessage.className = 'mt-4 text-sm font-medium text-green-600';
+        uploadForm.reset();
+        loadJournals();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    loadJournals();
+  </script>
+</body>
+</html>
